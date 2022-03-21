@@ -1,5 +1,8 @@
 package com.epam.ld.groovy.calculator
 
+import groovy.util.logging.Log
+
+@Log
 class Calculator {
 
     private static final String ADD = '+'
@@ -28,6 +31,7 @@ class Calculator {
     }
 
     private static String calculateSimple(String expression) {
+        log.info('Calculating simple expression: ' + expression)
         expression = expression.replaceAll('[-\\+\\*/]+', {" ${it}" }).trim()
         List<String> operations = prioritizeOperations(expression.split(' '))
         NumOperation start = new NumOperation(operations[0])
@@ -36,7 +40,9 @@ class Calculator {
             last.next = new NumOperation(operations[i])
             last = last.next
         }
-        start.calculate()
+        String result = start.calculate()
+        log.info('Result: ' + result)
+        result
     }
 
     private static List<String> prioritizeOperations(String[] operations) {
