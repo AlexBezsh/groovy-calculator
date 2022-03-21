@@ -9,13 +9,12 @@ class Calculator {
     private static final String LEFT_BRACE = '('
     private static final String RIGHT_BRACE = ')'
 
-    static Number calculate(String expression) {
+    static String calculate(String expression) {
         while (expression.contains(LEFT_BRACE)) {
             String subExpression = extractSubExpression(expression)
             expression = replaceWithResult(expression, subExpression)
         }
-        double result = calculateSimple(expression).toDouble()
-        result == (int) result ? result as int : result
+        new BigDecimal(calculateSimple(expression)).stripTrailingZeros().toPlainString()
     }
 
     private static String extractSubExpression(String expression) {
@@ -63,32 +62,32 @@ class Calculator {
     private static class NumOperation {
 
         String sign
-        double num
+        BigDecimal num
         NumOperation next
 
         NumOperation(String operation) {
-            def getNum = operation.substring(1).&toDouble
+            String numString = operation.substring(1)
             switch (operation.charAt(0)) {
                 case ADD:
-                    num = getNum()
+                    num = new BigDecimal(numString)
                     break
                 case SUBTRACT:
-                    num = -getNum()
+                    num = new BigDecimal(numString).negate()
                     break
                 case MULTIPLY:
                     sign = MULTIPLY
-                    num = getNum()
+                    num = new BigDecimal(numString)
                     break
                 case DIVIDE:
                     sign = DIVIDE
-                    num = getNum()
+                    num = new BigDecimal(numString)
                     break
                 default:
-                    num = operation.toDouble()
+                    num = new BigDecimal(operation)
             }
         }
 
-        double calculate() {
+        BigDecimal calculate() {
             if (next == null) {
                 return num
             }
@@ -100,15 +99,15 @@ class Calculator {
                 next.num = this / next
                 return next.calculate()
             }
-            this.num + next.calculate()
+            this.num.add(next.calculate())
         }
 
-        private double multiply(NumOperation other) {
-            this.num * other.num
+        private BigDecimal multiply(NumOperation other) {
+            this.num.multiply(other.num)
         }
 
-        private double div(NumOperation other) {
-            this.num / other.num
+        private BigDecimal div(NumOperation other) {
+            this.num.divide(other.num)
         }
 
     }
